@@ -6,4 +6,5 @@ class opt:
     channels = 3
     img_height = 224
     img_width = 224
+    checkpoint_interval = 5
 

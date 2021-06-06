@@ -16,9 +16,9 @@ import datatime
 import sys
 import os
 import tqdm
+from config import opt
 
 if __name__ == "__main__":
-    opt = []
     # Initialize generator and discriminator
     input_shape = (opt.channels, opt.img_height, opt.img_width)
     G_AB = GeneratorResNet(input_shape, opt.n_residual_blocks)
