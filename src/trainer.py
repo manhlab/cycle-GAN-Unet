@@ -30,9 +30,7 @@ if __name__ == "__main__":
     transform_ = get_transform(opt)
     # optimize_G, optimize_D_A, optimize_D_B = get_optimizer()
     optimize_G = torch.optim.Adam(
-        itertools.chain(G_AB.parameters(), G_BA.parameters()),
-        lr=opt.lr,
-        betas=(opt.b1, opt.b2),
+    itertools.chain(G_AB.parameters(), G_BA.parameters()), lr=opt.lr, betas=(opt.b1, opt.b2)
     )
     optimize_D_A = torch.optim.Adam(D_A.parameters(), lr=opt.lr, betas=(opt.b1, opt.b2))
     optimize_D_B = torch.optim.Adam(D_B.parameters(), lr=opt.lr, betas=(opt.b1, opt.b2))
@@ -40,7 +38,7 @@ if __name__ == "__main__":
         opt, optimize_G, optimize_D_A, optimize_D_B
     )
     device = get_device()
-    if device == "cuda":
+    if device=="cuda":
         G_AB = G_AB.cuda()
         G_BA = G_BA.cuda()
         D_A = D_A.cuda()
@@ -69,17 +67,11 @@ if __name__ == "__main__":
 
     prev_time = time.time()
     for epoch in range(opt.n_epochs):
-        for i, batch in tqdm.tqdm(enumerate(train_loader)):
+        for i, batch in tqdm.tqdm_notebook(enumerate(train_loader)):
             real_A, real_B = [item.to(device) for item in batch]
             # Adversarial ground truths
-            valid = Variable(
-                torch.ones((real_A.size(0), *D_A.output_shape)).float(),
-                requires_grad=False,
-            )
-            fake = Variable(
-                torch.zeros((real_A.size(0), *D_A.output_shape)).float(),
-                requires_grad=False,
-            )
+            valid = Variable(torch.ones((real_A.size(0), *D_A.output_shape)).float(), requires_grad=False)
+            fake = Variable(torch.zeros((real_A.size(0), *D_A.output_shape)).float(), requires_grad=False)
             G_AB.train()
             G_BA.train()
             valid = valid.to(device)
@@ -90,18 +82,16 @@ if __name__ == "__main__":
             loss_A = critrion_identify(fake_A, real_A)
             loss_B = critrion_identify(fake_B, real_B)
 
-            loss_identify = (loss_A + loss_B) / 2
-            loss_AB = critrion_gan(D_B(fake_B), valid)
-            loss_BA = critrion_gan(D_A(fake_A), valid)
-            loss_GAN = (loss_AB + loss_BA) / 2
+            loss_identify = (loss_A + loss_B)/2
+            loss_AB = critrion_gan(D_B(fake_B),valid)
+            loss_BA = critrion_gan(D_A(fake_A),valid)
+            loss_GAN = (loss_AB+loss_BA)/2
             recov_A = G_BA(fake_B)
             recov_B = G_AB(fake_A)
-            loss_cycle_A = critrion_cycle(recov_A, real_A)
-            loss_cycle_B = critrion_cycle(recov_B, real_B)
-            loss_cycle = (loss_cycle_A + loss_cycle_B) / 2
-            total_loss = (
-                loss_GAN + opt.lambda_cyc * loss_cycle + opt.lambda_id * loss_identify
-            )
+            loss_cycle_A = critrion_cycle(recov_A , real_A)
+            loss_cycle_B = critrion_cycle(recov_B , real_B)
+            loss_cycle = (loss_cycle_A+loss_cycle_B)/2
+            total_loss = loss_GAN + opt.lambda_cyc * loss_cycle + opt.lambda_id * loss_identify
 
             total_loss.backward()
             optimize_G.step()
@@ -145,9 +135,7 @@ if __name__ == "__main__":
             # Determine approximate time left
             batches_done = epoch * len(train_loader) + i
             batches_left = opt.n_epochs * len(train_loader) - batches_done
-            time_left = datetime.timedelta(
-                seconds=batches_left * (time.time() - prev_time)
-            )
+            time_left = datetime.timedelta(seconds=batches_left * (time.time() - prev_time))
             prev_time = time.time()
             sys.stdout.write(
                 "\r[Epoch %d/%d] [Batch %d/%d] [D loss: %f] [G loss: %f, adv: %f, cycle: %f, identity: %f] ETA: %s"
@@ -172,19 +160,21 @@ if __name__ == "__main__":
 
         if opt.checkpoint_interval != -1 and epoch % opt.checkpoint_interval == 0:
             # Save model checkpoints
-            torch.save(
-                G_AB.state_dict(),
-                "saved_models/%s/G_AB_%d.pth" % (opt.dataset_name, epoch),
-            )
-            torch.save(
-                G_BA.state_dict(),
-                "saved_models/%s/G_BA_%d.pth" % (opt.dataset_name, epoch),
-            )
-            torch.save(
-                D_A.state_dict(),
-                "saved_models/%s/D_A_%d.pth" % (opt.dataset_name, epoch),
-            )
-            torch.save(
-                D_B.state_dict(),
-                "saved_models/%s/D_B_%d.pth" % (opt.dataset_name, epoch),
-            )
+            torch.save(G_AB.state_dict(), "saved_models/%s/G_AB_%d.pth" % (opt.dataset_name, epoch))
+            torch.save(G_BA.state_dict(), "saved_models/%s/G_BA_%d.pth" % (opt.dataset_name, epoch))
+            torch.save(D_A.state_dict(), "saved_models/%s/D_A_%d.pth" % (opt.dataset_name, epoch))
+            torch.save(D_B.state_dict(), "saved_models/%s/D_B_%d.pth" % (opt.dataset_name, epoch))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
