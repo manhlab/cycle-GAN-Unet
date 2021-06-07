@@ -13,9 +13,9 @@ fi
 
 echo "Specified [$FILE]"
 URL=https://people.eecs.berkeley.edu/~taesung_park/CycleGAN/datasets/$FILE.zip
-ZIP_FILE=../datasets/$FILE.zip
-TARGET_DIR=../datasets/$FILE/
+ZIP_FILE=/content/cycle-GAN-Unet/dataset/$FILE.zip
+TARGET_DIR=/content/cycle-GAN-Unet/dataset/$FILE/
 wget -N $URL -O $ZIP_FILE
 mkdir $TARGET_DIR
-unzip $ZIP_FILE -d ../datasets/
+unzip $ZIP_FILE -d /content/cycle-GAN-Unet/dataset/
 rm $ZIP_FILE

@@ -4,6 +4,7 @@ import numpy as np
 import os
 import torchvision.transforms as transforms
 from PIL import Image
+from torch.autograd import Variable
 
 
 def seed_everything(seed=42):

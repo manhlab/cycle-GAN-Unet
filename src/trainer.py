@@ -2,21 +2,22 @@ import torch.optim as optim
 import torch
 
 from dataloader import CycleganDataset
-from .utils import *
-from .model import *
+from utils import *
+from model import *
 
-from torchvision import dataset
-import torch.utils.functional as F
-from torch.utils.data import Dataset, Dataloader
+from torchvision import transforms
+import torch.nn.functional as F
+from torch.utils.data import Dataset, DataLoader
 import torch.nn as nn
 import torch
 from torch.autograd import Variable
 import time
-import datatime
+import datetime
 import sys
 import os
 import tqdm
 from config import opt
+import itertools
 
 if __name__ == "__main__":
     # Initialize generator and discriminator
@@ -27,7 +28,12 @@ if __name__ == "__main__":
     D_B = Discriminator(input_shape)
     critrion_gan, critrion_cycle, critrion_identify = get_loss()
     transform_ = get_transform(opt)
-    optimize_G, optimize_D_A, optimize_D_B = get_optimizer()
+    # optimize_G, optimize_D_A, optimize_D_B = get_optimizer()
+    optimize_G = torch.optim.Adam(
+    itertools.chain(G_AB.parameters(), G_BA.parameters()), lr=opt.lr, betas=(opt.b1, opt.b2)
+    )
+    optimize_D_A = torch.optim.Adam(D_A.parameters(), lr=opt.lr, betas=(opt.b1, opt.b2))
+    optimize_D_B = torch.optim.Adam(D_B.parameters(), lr=opt.lr, betas=(opt.b1, opt.b2))
     scheduler_G, scheduler_D_A, scheduler_D_B = get_scheduler(
         opt, optimize_G, optimize_D_A, optimize_D_B
     )
@@ -41,14 +47,14 @@ if __name__ == "__main__":
         critrion_cycle.cuda()
         critrion_identify.cuda()
 
-    train_loader = Dataloader(
-        CycleganDataset("../data/train", transform_),
+    train_loader = DataLoader(
+        CycleganDataset("/content/cycle-GAN-Unet/dataset/horse2zebra", transform_),
         batch_size=opt.batch_size,
         shuffle=True,
         num_workers=opt.num_workers,
     )
-    valid_loader = Dataloader(
-        CycleganDataset("../data/valid", transform_),
+    valid_loader = DataLoader(
+        CycleganDataset("/content/cycle-GAN-Unet/dataset/horse2zebra", transform_),
         batch_size=opt.batch_size,
         shuffle=True,
         num_workers=opt.num_workers,
@@ -60,12 +66,12 @@ if __name__ == "__main__":
     fake_B_buffer = ReplayBuffer()
 
     prev_time = time.time()
-    for epoch in range(opt.epochs):
+    for epoch in range(opt.n_epochs):
         for i, batch in tqdm.tqdm(enumerate(train_loader)):
             real_A, real_B = [item.to(device) for item in batch]
             # Adversarial ground truths
-            valid = Variable(np.ones((real_A.size(0), *D_A.output_shape)).floats(), requires_grad=False)
-            fake = Variable(np.zeros((real_A.size(0), *D_A.output_shape)).floats(), requires_grad=False)
+            valid = Variable(torch.ones((real_A.size(0), *D_A.output_shape)).float(), requires_grad=False)
+            fake = Variable(torch.zeros((real_A.size(0), *D_A.output_shape)).float(), requires_grad=False)
             G_AB.train()
             G_BA.train()
 
