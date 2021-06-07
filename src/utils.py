@@ -99,7 +99,9 @@ def get_scheduler(opt, optimize_G, optimize_D_A, optimize_D_B):
 
 class ReplayBuffer:
     def __init__(self, max_size=50):
-        assert max_size > 0, "Empty buffer or trying to create a black hole. Be careful."
+        assert (
+            max_size > 0
+        ), "Empty buffer or trying to create a black hole. Be careful."
         self.max_size = max_size
         self.data = []
 

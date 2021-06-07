@@ -1,10 +1,16 @@
 import torch
 from torch.utils.data import DataLoader, Dataset
 import cv2
-import transforms
+from torchvision import transforms
 from PIL import Image
 import glob
 import os
+
+
+def to_rgb(image):
+    rgb_image = Image.new("RGB", image.size)
+    rgb_image.paste(image)
+    return rgb_image
 
 
 class CycleganDataset(Dataset):
@@ -22,9 +28,13 @@ class CycleganDataset(Dataset):
     def __getitem__(self, index):
         image_A = Image.open(self.files_A[index % len(self.files_A)])
         image_B = Image.open(self.files_B[index % len(self.files_B)])
-
-        if self.transform:
+        # Convert grayscale images to rgb
+        if image_A.mode != "RGB":
+            image_A = to_rgb(image_A)
+        if image_B.mode != "RGB":
+            image_B = to_rgb(image_B)
+        if self.transform_aug:
             image_A = self.transform_aug(image_A)
             image_B = self.transform_aug(image_B)
 
-        return torch.tensor(image_A), torch.tensor(image_B)
+        return image_A, image_B

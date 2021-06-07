@@ -15,5 +15,3 @@ class opt:
     lr = 0.0002
     epoch = 0
     decay_epoch = 100
-
-
