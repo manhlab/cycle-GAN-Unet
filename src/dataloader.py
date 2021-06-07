@@ -1,5 +1,5 @@
 import torch
-from torch.utils.data import Dataloader, Dataset
+from torch.utils.data import DataLoader, Dataset
 import cv2
 import transforms
 from PIL import Image
@@ -13,8 +13,8 @@ class CycleganDataset(Dataset):
         self.model = mode
         self.transform_aug = transforms.Compose(transform_aug)
 
-        self.files_A = sorted(glob.glob(os.path.join(root, "%s/A" % mode) + "/*.*"))
-        self.files_B = sorted(glob.glob(os.path.join(root, "%s/B" % mode) + "/*.*"))
+        self.files_A = sorted(glob.glob(os.path.join(root, "%sA" % mode) + "/*.*"))
+        self.files_B = sorted(glob.glob(os.path.join(root, "%sB" % mode) + "/*.*"))
 
     def __len__(self):
         return max(len(self.files_A), len(self.files_B))
