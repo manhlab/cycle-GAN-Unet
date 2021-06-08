@@ -28,12 +28,7 @@ if __name__ == "__main__":
     D_B = Discriminator(input_shape)
     critrion_gan, critrion_cycle, critrion_identify = get_loss()
     transform_ = get_transform(opt)
-    # optimize_G, optimize_D_A, optimize_D_B = get_optimizer()
-    optimize_G = torch.optim.Adam(
-    itertools.chain(G_AB.parameters(), G_BA.parameters()), lr=opt.lr, betas=(opt.b1, opt.b2)
-    )
-    optimize_D_A = torch.optim.Adam(D_A.parameters(), lr=opt.lr, betas=(opt.b1, opt.b2))
-    optimize_D_B = torch.optim.Adam(D_B.parameters(), lr=opt.lr, betas=(opt.b1, opt.b2))
+    optimize_G, optimize_D_A, optimize_D_B = get_optimizer(opt,G_AB , G_BA, D_A, D_B )
     scheduler_G, scheduler_D_A, scheduler_D_B = get_scheduler(
         opt, optimize_G, optimize_D_A, optimize_D_B
     )
@@ -67,15 +62,13 @@ if __name__ == "__main__":
 
     prev_time = time.time()
     for epoch in range(opt.n_epochs):
+        G_AB.train()
+        G_BA.train()
         for i, batch in tqdm.tqdm_notebook(enumerate(train_loader)):
             real_A, real_B = [item.to(device) for item in batch]
             # Adversarial ground truths
-            valid = Variable(torch.ones((real_A.size(0), *D_A.output_shape)).float(), requires_grad=False)
-            fake = Variable(torch.zeros((real_A.size(0), *D_A.output_shape)).float(), requires_grad=False)
-            G_AB.train()
-            G_BA.train()
-            valid = valid.to(device)
-            fake = fake.to(device)
+            valid = Variable(torch.ones((real_A.size(0), *D_A.output_shape)).float(), requires_grad=False).to(device)
+            fake = Variable(torch.zeros((real_A.size(0), *D_A.output_shape)).float(), requires_grad=False).to(device)
             optimize_G.zero_grad()
             fake_B = G_BA(real_A)
             fake_A = G_AB(real_B)

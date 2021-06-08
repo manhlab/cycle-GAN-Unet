@@ -5,7 +5,7 @@ import os
 import torchvision.transforms as transforms
 from PIL import Image
 from torch.autograd import Variable
-
+import itertools
 
 def seed_everything(seed=42):
     random.seed(seed)
@@ -77,10 +77,12 @@ def get_transform(opt):
     return transforms_
 
 
-def get_optimizer(opt):
-    optimize_G = torch.optim.Adam(opt.lr)
-    optimize_D_A = torch.optim.Adam(opt.lr)
-    optimize_D_B = torch.optim.Adam(opt.lr)
+def get_optimizer(opt, G_AB , G_BA, D_A, D_B):
+    optimize_G = torch.optim.Adam(
+    itertools.chain(G_AB.parameters(), G_BA.parameters()), lr=opt.lr, betas=(opt.b1, opt.b2)
+    )
+    optimize_D_A = torch.optim.Adam(D_A.parameters(), lr=opt.lr, betas=(opt.b1, opt.b2))
+    optimize_D_B = torch.optim.Adam(D_B.parameters(), lr=opt.lr, betas=(opt.b1, opt.b2))
     return optimize_G, optimize_D_A, optimize_D_B
 
 
