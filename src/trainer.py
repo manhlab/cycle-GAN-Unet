@@ -1,11 +1,9 @@
-import torch.optim as optim
 import torch
 
 from dataloader import CycleganDataset
 from utils import *
 from model import *
 
-from torchvision import transforms
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 import torch.nn as nn
@@ -14,16 +12,25 @@ from torch.autograd import Variable
 import time
 import datetime
 import sys
-import os
 import tqdm
 from config import opt
-import itertools
+import argparse
+from Unet import UNet
 
 if __name__ == "__main__":
     # Initialize generator and discriminator
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dataset", default="horse2zebra", type=str, help= "name in the dataset directory")
+    parser.add_argument("--model", default="resnet", type=str, help= "model name")
+    parser.add_argument("--device", default="cuda", type=str, help= "device cuda/gpu")
+    args = parser.parse_args()
     input_shape = (opt.channels, opt.img_height, opt.img_width)
-    G_AB = GeneratorResNet(input_shape, opt.n_residual_blocks)
-    G_BA = GeneratorResNet(input_shape, opt.n_residual_blocks)
+    if args.model=="unet":
+        G_AB = UNet()
+        G_BA = UNet()
+    else:
+        G_AB = GeneratorResNet(input_shape, opt.n_residual_blocks)
+        G_BA = GeneratorResNet(input_shape, opt.n_residual_blocks)
     D_A = Discriminator(input_shape)
     D_B = Discriminator(input_shape)
     critrion_gan, critrion_cycle, critrion_identify = get_loss()
@@ -32,8 +39,8 @@ if __name__ == "__main__":
     scheduler_G, scheduler_D_A, scheduler_D_B = get_scheduler(
         opt, optimize_G, optimize_D_A, optimize_D_B
     )
-    device = get_device()
-    if device=="cuda":
+    device = args.device
+    if args.device == "cuda":
         G_AB = G_AB.cuda()
         G_BA = G_BA.cuda()
         D_A = D_A.cuda()
@@ -43,13 +50,13 @@ if __name__ == "__main__":
         critrion_identify.cuda()
 
     train_loader = DataLoader(
-        CycleganDataset("/content/cycle-GAN-Unet/dataset/horse2zebra", transform_),
+        CycleganDataset("/content/cycle-GAN-Unet/dataset/"+args.dataset, transform_),
         batch_size=opt.batch_size,
         shuffle=True,
         num_workers=opt.num_workers,
     )
     valid_loader = DataLoader(
-        CycleganDataset("/content/cycle-GAN-Unet/dataset/horse2zebra", transform_),
+        CycleganDataset("/content/cycle-GAN-Unet/dataset/"+ args.dataset, transform_),
         batch_size=opt.batch_size,
         shuffle=True,
         num_workers=opt.num_workers,
