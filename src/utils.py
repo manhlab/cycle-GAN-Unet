@@ -6,7 +6,17 @@ import torchvision.transforms as transforms
 from PIL import Image
 from torch.autograd import Variable
 import itertools
+import logging
+import os
 
+logger = logging.getLogger(__name__)
+def create_folder(folder):
+    try:
+        os.makedirs(folder)
+        logger.info(f"Create `{os.path.join(os.getcwd(), folder)}` directory successful.")
+    except OSError:
+        logger.warning(f"Directory `{os.path.join(os.getcwd(), folder)}` already exists!")
+        pass
 def seed_everything(seed=42):
     random.seed(seed)
     os.environ["PYTHONHASHSEED"] = str(seed)
